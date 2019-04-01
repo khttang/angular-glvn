@@ -1,14 +1,11 @@
-import { Injectable } from '@angular/core';
+import {Inject, Injectable} from '@angular/core';
 import { AUTH_CONFIG } from './auth0-variables';
 import { Router } from '@angular/router';
 import * as auth0 from 'auth0-js';
+import {LOCAL_STORAGE, WebStorageService} from 'angular-webstorage-service';
 
 @Injectable()
 export class AuthService {
-
-  private _idToken: string;
-  private _accessToken: string;
-  private _expiresAt: number;
 
   auth0 = new auth0.WebAuth({
     clientID: AUTH_CONFIG.clientID,
@@ -19,18 +16,15 @@ export class AuthService {
 
   userProfile: any;
 
-  constructor(public router: Router) {
-    this._idToken = '';
-    this._accessToken = '';
-    this._expiresAt = 0;
+  constructor(@Inject(LOCAL_STORAGE) private storage: WebStorageService, public router: Router) {
   }
 
   get accessToken(): string {
-    return this._accessToken;
+    return this.storage.get('access_token');
   }
 
   get idToken(): string {
-    return this._idToken;
+    return this.storage.get('token_id');
   }
 
   public login(): void {
@@ -53,9 +47,9 @@ export class AuthService {
   private localLogin(authResult): void {
     // Set the time that the access token will expire at
     const expiresAt = (authResult.expiresIn * 1000) + Date.now();
-    this._accessToken = authResult.accessToken;
-    this._idToken = authResult.idToken;
-    this._expiresAt = expiresAt;
+    this.storage.set('access_token', authResult.accessToken);
+    this.storage.set('token_id', authResult.idToken);
+    this.storage.set('expires_at', expiresAt);
   }
 
   public renewTokens(): void {
@@ -71,9 +65,9 @@ export class AuthService {
 
   public logout(): void {
     // Remove tokens and expiry time
-    this._idToken = '';
-    this._accessToken = '';
-    this._expiresAt = 0;
+    this.storage.remove('access_token');
+    this.storage.remove('token_id');
+    this.storage.remove('expires_at');
 
     this.auth0.logout({
       return_to: window.location.origin
@@ -83,7 +77,7 @@ export class AuthService {
   public isAuthenticated(): boolean {
     // Check whether the current time is past the
     // access token's expiry time
-    return this._accessToken && Date.now() < this._expiresAt;
+    return this.accessToken && Date.now() < this.storage.get('expires_at');
   }
 
 }

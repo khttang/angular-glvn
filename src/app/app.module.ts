@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { StorageServiceModule} from 'angular-webstorage-service';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
@@ -25,6 +26,7 @@ import { RegisterHouseholdComponent } from './register-household/register-househ
   ],
   imports: [
     BrowserModule,
+    StorageServiceModule,
     FormsModule,
     HttpModule,
     RouterModule.forRoot(ROUTES),
